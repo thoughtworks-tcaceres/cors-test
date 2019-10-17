@@ -15,13 +15,25 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.get("/login", (req, res) => {
-  res.send("hello world");
+const jwt = require("jsonwebtoken");
+
+app.post("/login", (req, res) => {
+  const token = jwt.sign("admin", "tylergigeco");
+  console.log(token);
+  res.json({ token: token });
 });
 
 app.get("/getinfo", (req, res) => {
-  console.log(req);
-  res.json("data is here");
+  let token = req.headers["authorization"];
+  console.log("token: ", token);
+  if (token.startsWith("Bearer ")) {
+    token = token.slice(7, token.length);
+  }
+  const decoded = jwt.decode(token);
+  if (decoded.sub === "admin") {
+    return res.json({ orders: [{ id: 1 }, { id: 2 }] });
+  }
+  return res.json("error");
 });
 
 app.listen(PORT, () => {
